@@ -58,7 +58,7 @@ class VTXMesh:
         (num, offset, self.flags) = _struct_unpack('=iiB', buf)
         end = buf.tell()
         buf.seek(offset - 9, 1)
-        self.meshes = list(map(VTXStripGroup, [buf] * num))
+        self.strip_groups = list(map(VTXStripGroup, [buf] * num))
         buf.seek(end)
 
 class VTXModelLOD:
