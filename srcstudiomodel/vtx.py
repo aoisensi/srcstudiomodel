@@ -18,7 +18,7 @@ class VTXVertex:
         ))
         (self.num_bones, self.orig_mesh_vert_id) = _struct_unpack('=BH', buf)
         self.bone_id = list(map(
-            lambda _: _struct_unpack('=h', buf)[0],
+            lambda _: _struct_unpack('=b', buf)[0],
             range(_MAX_NUM_BONES_PER_VERT),
         ))
 
