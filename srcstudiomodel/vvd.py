@@ -39,7 +39,6 @@ class VVDVertex:
         self.tex_coord = _struct_unpack('=ff', buf)
 
 class VVD:
-    id: int
     version: int
     checksum: int
     num_lods: int
@@ -51,8 +50,10 @@ class VVD:
     def __init__(self, buf: BufferedReader):
         start = buf.seek(0, 1)
 
-        (self.id, self.version, self.checksum, self.num_lods) = \
-            _struct_unpack('=iiii', buf)
+        (id, self.version, self.checksum, self.num_lods) = \
+            _struct_unpack('=IIIi', buf)
+        if id != 0x56534449:
+            raise Exception('this is not vvd file.')
         self.num_lod_vertexes = list(map(lambda _: _struct_unpack('=i', buf)[0], range(_MAX_NUM_LODS)))
         (num_fixups, fixup_stable_start, vertex_data_start, tangent_data_start) = \
             _struct_unpack('=iiii', buf)

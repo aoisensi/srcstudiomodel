@@ -110,6 +110,6 @@ class VTX:
         (self.version, self.vert_cache_size,
             self.max_bones_per_strip, self.max_bones_per_tri, self.max_bones_per_vert,
             self.checksum, self.num_lods, self.material_replacement_list_offset,
-            num_body_parts, body_part_offset) = _struct_unpack('=iiHHiiiiii', buf)
+            num_body_parts, body_part_offset) = _struct_unpack('=IiHHiiiiii', buf)
         buf.seek(body_part_offset)
         self.body_parts = list(map(VTXBodyPart, [buf] * num_body_parts))
