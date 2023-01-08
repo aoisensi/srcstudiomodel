@@ -42,6 +42,7 @@ class MDLMesh:
          self.material_type, self.material_params, self.mesh_id) \
             = _struct_unpack('=iiiiiiiii', buf)
         self.center = _struct_unpack('=fff', buf)
+        buf.seek(68, 1)  # this need fix in future
 
 
 class MDLModel:
@@ -61,13 +62,14 @@ class MDLModel:
     meshes: List[MDLMesh]
 
     def __init__(self, buf: BufferedReader):
+        start = buf.tell()
         self.name = _read_name64(buf)
         (self.type, self.bounding_radius, self.num_meshes, self.mesh_index,
          self.num_vertices, self.vertex_index, self.tangents_index,
          self.num_attachments, self.attachment_index, self.num_eyeballs,
          self.eyeball_index) = _struct_unpack('=ifiiiiiiiii', buf)
         end = buf.seek(40, 1)
-        buf.seek(self.mesh_index, 1)
+        buf.seek(start + self.mesh_index)
         self.meshes = list(map(MDLMesh, [buf]*self.num_meshes))
         buf.seek(end)
 
