@@ -1,7 +1,10 @@
 from io import BufferedReader
 from typing import List, Tuple
 
+from srcstudiomodel.mdl_enum import MDLFlag
+
 from .util import _struct_unpack
+from .type import Matrix3x4, Vector3, Vector4
 
 
 def _read_name64(buf: BufferedReader) -> str:
@@ -105,14 +108,60 @@ class MDLBodyPart:
         buf.seek(end)
 
 
+class MDLBone:
+    name: str
+    parent_id: int
+    parent: 'MDLBone'
+    children: List['MDLBone']
+    bone_controller: List[int]
+    pos: Vector3
+    quat: Vector4
+    rot: Vector3
+    posscale: Vector3
+    rotscale: Vector3
+    pose_to_bone: Matrix3x4
+    q_alignment: Vector4
+    flags: int
+    proctype: int
+    procindex: int
+    physics_bone: int
+    surface_prop_index: int
+    contents: int
+    # unused 32 bytes
+
+    def __init__(self, buf: BufferedReader):
+        start = buf.tell()
+        (name_index, self.parent_id) = _struct_unpack('=ii', buf)
+        self.name = _read_strings(buf, start+name_index)[0]
+        self.bone_controller = list(_struct_unpack('=iiiiii', buf))
+        self.pos = _struct_unpack('=fff', buf)
+        self.quat = _struct_unpack('=ffff', buf)
+        self.rot = _struct_unpack('=fff', buf)
+        self.posscale = _struct_unpack('=fff', buf)
+        self.rotscale = _struct_unpack('=fff', buf)
+        self.pose_to_bone = (
+            _struct_unpack('=ffff', buf),
+            _struct_unpack('=ffff', buf),
+            _struct_unpack('=ffff', buf),
+        )
+        self.q_alignment = _struct_unpack('=ffff', buf)
+        (self.flags, self.proctype, self.procindex, self.physics_bone,
+         self.surface_prop_index, self.contents) \
+            = _struct_unpack('=iiiiii', buf)
+        self.children = []
+        buf.seek(32, 1)
+
+
 class MDL:
     version: int
     checksum: int
     name: str
     # skipped many entries
-    flags: int
+    flags: MDLFlag
     # skipped many entries
 
+    bones: List[MDLBone]
+    root_bone: MDLBone
     textures: List[MDLTexture]
     skins: List[List[MDLTexture]]
     bodyparts: List[MDLBodyPart]
@@ -123,8 +172,13 @@ class MDL:
             raise Exception('this is not mdl file')
         self.name = _read_name64(buf)
         buf.seek(76, 1)
-        self.flags = _struct_unpack('=I', buf)[0]
-        buf.seek(48, 1)
+        self.flags = MDLFlag(_struct_unpack('=I', buf)[0])
+        # bone
+        (num, off) = _struct_unpack('=ii', buf)
+        home = buf.tell()
+        buf.seek(off)
+        self.bones = list(map(MDLBone, [buf]*num))
+        buf.seek(home + 40)
         # texture
         (num, off) = _struct_unpack('=ii', buf)
         home = buf.tell()
@@ -146,3 +200,13 @@ class MDL:
         buf.seek(off)
         self.bodyparts = list(map(MDLBodyPart, [buf]*num))
         # home = buf.tell()
+        self._bone_assemble()
+
+    def _bone_assemble(self):
+        for bone in self.bones:
+            if bone.parent_id < 0:
+                self.root_bone = bone
+                continue
+            parent = self.bones[bone.parent_id]
+            bone.parent = parent
+            parent.children.append(bone)
