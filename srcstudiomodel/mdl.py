@@ -74,6 +74,19 @@ class MDLModel:
         buf.seek(end)
 
 
+class MDLTexture:
+    name: str
+    flags: int
+    used: int
+
+    def __init__(self, buf: BufferedReader):
+        start = buf.tell()
+        (name_index, self.flags, self.used) = \
+            _struct_unpack('=iii', buf)
+        self.name = _read_strings(buf, start + name_index)[0]
+        buf.seek(52, 1)
+
+
 class MDLBodyPart:
     num_models: int
     model_index: int
@@ -100,7 +113,8 @@ class MDL:
     flags: int
     # skipped many entries
 
-    texture_names: List[str]
+    textures: List[MDLTexture]
+    skins: List[List[MDLTexture]]
     bodyparts: List[MDLBodyPart]
 
     def __init__(self, buf: BufferedReader):
@@ -112,8 +126,23 @@ class MDL:
         self.flags = _struct_unpack('=I', buf)[0]
         buf.seek(48, 1)
         # texture
-        buf.seek(28, 1)
+        (num, off) = _struct_unpack('=ii', buf)
+        home = buf.tell()
+        buf.seek(off)
+        self.textures = list(map(MDLTexture, [buf]*num))
+        buf.seek(home + 8)
+        # skins
+        (num, fnum, off) = _struct_unpack('=iii', buf)
+        home = buf.tell()
+        buf.seek(off)
+        self.skins = [
+            [self.textures[_struct_unpack('=h', buf)[0]]
+             for _ in range(num)] for _ in range(fnum)
+        ]
+        buf.seek(home)
+
         # bodypart
         (num, off) = _struct_unpack('=ii', buf)
         buf.seek(off)
         self.bodyparts = list(map(MDLBodyPart, [buf]*num))
+        # home = buf.tell()
