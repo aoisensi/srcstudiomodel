@@ -1,4 +1,4 @@
-from enum import IntFlag
+from enum import IntFlag, auto
 
 
 class MDLFlag(IntFlag):
@@ -21,3 +21,30 @@ class MDLFlag(IntFlag):
     AMBIENT_BOOST = 1 << 16
     DO_NOT_CAST_SHADOWS = 1 << 17
     CAST_TEXTURE_SHADOWS = 1 << 18
+
+
+class MDLAnimFlag(IntFlag):
+    STUDIO_ANIM_RAWPOS = 1 << 0
+    STUDIO_ANIM_RAWROT = 1 << 1
+    STUDIO_ANIM_ANIMPOS = 1 << 2
+    STUDIO_ANIM_ANIMROT = 1 << 3
+    STUDIO_ANIM_DELTA = 1 << 4
+    STUDIO_ANIM_RAWROT2 = 1 << 5
+
+
+class MDLAnimDescFlag(IntFlag):
+    STUDIO_LOOPING = auto()
+    STUDIO_SNAP = auto()
+    STUDIO_DELTA = auto()
+    STUDIO_AUTOPLAY = auto()
+    STUDIO_POST = auto()
+    STUDIO_ALLZEROS = auto()
+    _ = auto()
+    STUDIO_CYCLEPOSE = auto()
+    STUDIO_REALTIME = auto()
+    STUDIO_LOCAL = auto()
+    STUDIO_HIDDEN = auto()
+    STUDIO_OVERRIDE = auto()
+    STUDIO_ACTIVITY = auto()
+    STUDIO_EVENT = auto()
+    STUDIO_WORLD = auto()

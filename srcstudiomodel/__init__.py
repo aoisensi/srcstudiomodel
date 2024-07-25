@@ -1,6 +1,6 @@
 from .vvd import VVD
 from .vtx import VTX
-from .mdl import MDL, MDLBone
-from .mdl_enum import MDLFlag
+from .mdl import MDL, MDLBone, MDLAnim
+from .mdl_enum import MDLFlag, MDLAnimDescFlag, MDLAnimFlag
 
-__all__ = ['VVD', 'VTX', 'MDL', 'MDLBone', 'MDLFlag']
+__all__ = ['VVD', 'VTX', 'MDL', 'MDLBone', 'MDLFlag', 'MDLAnim', 'MDLAnimDescFlag', 'MDLAnimFlag']
